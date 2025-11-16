@@ -40,4 +40,4 @@ jobs:
 
       # 7. Push Docker image to GHCR
       - name: Push image to GHCR
-        run: docker push ghcr.io/{{ github.repository }}:latest
+        run: docker push ghcr.io/${{ github.repository }}:latest
