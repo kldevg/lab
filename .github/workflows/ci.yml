@@ -1,0 +1,43 @@
+name: CI - Build and Push Docker
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Set up Python 3.13
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      # 3. Install dependencies via Poetry
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry install
+
+      # 4. Run tests
+      - name: Run tests
+        run: poetry run pytest
+
+      # 5. Build Docker image
+      - name: Build Docker image
+        run: docker build -t ghcr.io/${{ github.repository }}:latest .
+
+      # 6. Log in to GHCR
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      # 7. Push Docker image to GHCR
+      - name: Push image to GHCR
+        run: docker push ghcr.io/{{ github.repository }}:latest
